@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0b315b">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Reel Stock">
+
+  <title>Reel Stock System</title>
+
+  <link rel="manifest" href="./manifest.json">
+  <link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="./icon-512.png">
+  <link rel="apple-touch-icon" href="./apple-touch-icon.png">
+
+  <style>
+    :root {
+      --navy:#0b315b;
+      --bg:#eef3f8;
+      --white:#fff;
+      --line:#dce5ef;
+      --blue:#0f6ee8;
+    }
+    * { box-sizing:border-box; }
+    html, body {
+      margin:0; width:100%; height:100%;
+      font-family:Arial,Helvetica,sans-serif;
+      background:var(--bg);
+      overflow:hidden;
+    }
+    .shell {
+      position:fixed; inset:0;
+      display:flex; flex-direction:column;
+      background:#fff;
+    }
+    .bar {
+      min-height:56px;
+      padding-top:env(safe-area-inset-top);
+      background:var(--navy);
+      color:#fff;
+      display:flex;
+      align-items:center;
+      padding-left:12px;
+      padding-right:12px;
+      gap:10px;
+    }
+    .logo {
+      width:40px; height:40px; border-radius:9px;
+      object-fit:cover; flex:0 0 auto; background:#fff;
+    }
+    .brand { flex:1; min-width:0; }
+    .title { font-size:16px; font-weight:800; line-height:1.05; }
+    .sub { font-size:10px; opacity:.82; margin-top:3px; }
+    .btn {
+      border:1px solid rgba(255,255,255,.45);
+      background:rgba(255,255,255,.08);
+      color:#fff;
+      border-radius:9px;
+      padding:8px 10px;
+      font-size:12px;
+      font-weight:700;
+      text-decoration:none;
+      cursor:pointer;
+      white-space:nowrap;
+    }
+    #installBtn { display:none; }
+    .wrap { flex:1; min-height:0; position:relative; }
+    iframe { width:100%; height:100%; border:0; display:block; background:#fff; }
+    .loading {
+      position:absolute; inset:0;
+      display:flex; align-items:center; justify-content:center;
+      background:#f7f9fc; z-index:5;
+      transition:opacity .2s ease;
+    }
+    .loading.hide { opacity:0; pointer-events:none; }
+    .card {
+      width:min(88vw,360px);
+      text-align:center;
+      background:#fff;
+      border:1px solid var(--line);
+      border-radius:18px;
+      padding:24px;
+      box-shadow:0 12px 34px rgba(11,49,91,.12);
+    }
+    .biglogo { width:90px; height:90px; border-radius:22px; object-fit:cover; }
+    .card h2 { margin:12px 0 5px; font-size:20px; }
+    .card p { margin:0; color:#667085; font-size:13px; line-height:1.45; }
+    .spin {
+      width:28px; height:28px; border-radius:50%;
+      border:3px solid #d9e3ef; border-top-color:var(--blue);
+      margin:18px auto 0; animation:spin .85s linear infinite;
+    }
+    @keyframes spin { to { transform:rotate(360deg); } }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header class="bar">
+      <img class="logo" src="./icon-192.png" alt="Reel Stock">
+      <div class="brand">
+        <div class="title">REEL STOCK SYSTEM</div>
+        <div class="sub">Starish Autopac Pvt. Ltd.</div>
+      </div>
+      <button id="installBtn" class="btn">Install</button>
+      <a class="btn" href="https://script.google.com/macros/s/AKfycbzNPHdaxSujRw2HfXqunbiCqooSehdVaFV9xIcUaVtqCiJdtx8zk0X3QzpjaOLd2fMq/exec" target="_blank" rel="noopener">Open Direct</a>
+    </header>
+
+    <section class="wrap">
+      <div id="loading" class="loading">
+        <div class="card">
+          <img class="biglogo" src="./icon-192.png" alt="">
+          <h2>Reel Stock System</h2>
+          <p>Loading live physical reel counting system...</p>
+          <div class="spin"></div>
+        </div>
+      </div>
+
+      <iframe
+        id="appFrame"
+        src="https://script.google.com/macros/s/AKfycbzNPHdaxSujRw2HfXqunbiCqooSehdVaFV9xIcUaVtqCiJdtx8zk0X3QzpjaOLd2fMq/exec"
+        title="Reel Stock System"
+        allow="camera; clipboard-read; clipboard-write"
+        referrerpolicy="strict-origin-when-cross-origin"></iframe>
+    </section>
+  </main>
+
+<script>
+  const loading = document.getElementById('loading');
+  const frame = document.getElementById('appFrame');
+  const installBtn = document.getElementById('installBtn');
+  let deferredPrompt = null;
+
+  frame.addEventListener('load', () => {
+    setTimeout(() => loading.classList.add('hide'), 250);
+  });
+  setTimeout(() => loading.classList.add('hide'), 9000);
+
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./service-worker.js')
+        .catch(err => console.error('Service worker registration failed:', err));
+    });
+  }
+
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    installBtn.style.display = 'inline-block';
+  });
+
+  installBtn.addEventListener('click', async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    await deferredPrompt.userChoice;
+    deferredPrompt = null;
+    installBtn.style.display = 'none';
+  });
+
+  window.addEventListener('appinstalled', () => {
+    deferredPrompt = null;
+    installBtn.style.display = 'none';
+  });
+</script>
+</body>
+</html>
